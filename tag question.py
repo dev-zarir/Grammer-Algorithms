@@ -1,35 +1,24 @@
-import nltk
-from nltk import word_tokenize
+import spacy
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
+# Load the en_core_web_sm model
+nlp = spacy.load("en_core_web_sm")
 
-auxiliary_verbs=["am","is","are","was","were","have","has","had"]
+# Define the sentence
+sentence = "Rahim who is a youtuber wants to get a job"
 
-def get_verb_from_sent(sent):
-    tokens = nltk.word_tokenize(sent.lower().replace("'m", " am"))
-    pos_tags = nltk.pos_tag(tokens)
-    print("pos_tags", pos_tags)
-    for word, pos in pos_tags:
-        if pos == "MD":
-            return word
-        elif pos == "VBP":
-            if word in auxiliary_verbs:
-                return word
-            else:
-                return "do"
-        elif pos == "VBZ":
-            if word in auxiliary_verbs:
-                return word
-            else:
-                return "does"
-        elif pos == "VBD":
-            if word in auxiliary_verbs:
-                return word
-            else:
-                return "did"
-    return False
+# Parse the sentence
+doc = nlp(sentence)
 
-sentence = "He likes to swim"
-print("Verb:", get_verb_from_sent(sentence))
+# Extract the principal clause by iterating over the subtree of the root token
+principal_clause = []
+for token in doc:
+    if token.dep_ == "ROOT":
+        for t in token.subtree:
+            principal_clause.append(t.text)
+        break
 
+# Join the words of the principal clause to form a sentence
+principal_clause = " ".join(principal_clause)
+
+# Print the principal clause
+print(principal_clause)
