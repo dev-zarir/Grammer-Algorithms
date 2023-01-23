@@ -31,6 +31,6 @@ def get_verb_from_sent(sent):
     return False
 
 while True:
-    sentence = input("Enter sentence: ")
+    sentence = "He likes to swim"
     print("Verb:", get_verb_from_sent(sentence))
 
