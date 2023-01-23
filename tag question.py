@@ -1,7 +1,7 @@
 import spacy
 
 # Load the en_core_web_sm model
-nlp = spacy.load("en_core_web_lg")
+nlp = spacy.load("en_core_web_sm")
 
 # Define the sentence
 sentence = "Rahim who is a youtuber wants to get a job"
