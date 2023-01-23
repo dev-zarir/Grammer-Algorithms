@@ -23,7 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -U pip setuptools wheel
         pip install -U spacy
-        python -m spacy download en_core_web_lg
+        python -m spacy download en_core_web_sm
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run File
       run: |
