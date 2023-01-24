@@ -3,6 +3,7 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 operators=['am', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'can', 'could', 'shall', 'should', 'will', 'would', 'may', 'might', 'must', 'dare', 'need', 'used', 'ought']
 exceptional_neg_verbs = {'am': "aren't", 'can': "can't", 'shall': "shan't", 'will': "won't"}
+# Pronouns: I, you, he, she, it, we, they, there
 
 def get_dep_pos_tag(sent:str) -> list:
     doc = nlp(sent)
@@ -45,9 +46,15 @@ def get_subject_from_sent(sent:str) -> list:
     doc = nlp(sent)
     subjects=[]
     for token in doc:
-        # if token.dep_ == 'nsubj': subjects.append(token.text)
-        if token.dep_ == 'nsubj': subjects.append(' '.join([t.text for t in list(token.subtree)]))
+        if token.dep_ in ['nsubj', 'nsubjpass']: subjects.append(' '.join([t.text for t in list(token.subtree)]))
     return subjects
+
+def get_pronoun_from_subject(subject:str) -> str:
+    doc = nlp(subject.lower())
+    for token in doc:
+        print(list(token.subtree))
+        if token.dep_ in ['nsubj', 'nsubjpass'] and token.pos_ == 'PRON': return subject
+    return subject
 
 def solve_tag_question(sent:str) -> str:
     sentence = sent
@@ -63,10 +70,12 @@ def solve_tag_question(sent:str) -> str:
     if aux_verbs: verb=aux_verbs[0]
     else: verb=main_verbs[0]
     if not negative: verb=get_negative_verb(verb)
-    return f'{verb} {subjects[0]}'
+    return f'{verb} {get_pronoun_from_subject(subjects[0])}'
 
 while 1:
     str_in = input('Sentence: ')
     if str_in == 'exit': quit()
     print('Answer:', solve_tag_question(str_in))
 
+# Add negative detector
+# Fix Pronoun of subject
