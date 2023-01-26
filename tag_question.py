@@ -3,7 +3,7 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 operators= ['am', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'can', 'could', 'shall', 'should', 'will', 'would', 'may', 'might', 'must', 'dare', 'need', 'used', 'ought']
 exceptional_neg_verbs = {'am': "aren't", 'can': "can't", 'shall': "shan't", 'will': "won't",'need':'need'}
-negative_words= ['nothing', 'nobody', 'none', 'never', 'hardly', 'scarcely', 'seldom', 'rarely', 'few', 'little']
+negative_words= ['nothing', 'nobody', 'none', 'never', 'hardly', 'scarcely', 'seldom', 'rarely', 'barely', 'few', 'little']
 imp_replacement=['me','him','her','them', 'it']
 # Pronouns: I, you, he, she, it, we, they, there
 
