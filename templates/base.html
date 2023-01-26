@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="/static/mdb.dark.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+  </head>
+  <body>
+  	<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark shadow">
+		  <div class="container-fluid">
+		    <a class="navbar-brand" href="/">Grammar Algorithms<span style="font-size: 10px;color: white !important;" class="badge text-muted ms-1 mt-1 bg-primary">v1.0</span></a>
+		    <button style="padding-left: 5px;margin-right: 5px;width: 35px;height: 28px;" class="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+		      <i id="menu_icon" class="fas fa-bars"></i>
+		    </button>
+		    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+		      <div class="ms-auto navbar-nav">
+		        <a class="nav-link {% block home %}{% endblock %}" href="/">Home</a>
+		        <a class="nav-link {% block contact %}{% endblock %}" href="https://fb.com/smshahriar.zarir.94">Contact Me</a>
+		        <a class="nav-link {% block tag %}{% endblock %}" href="https://fb.com/smshahriar.zarir.94">Tag Question Solver</a>
+		      </div>
+		    </div>
+		  </div>
+		</nav>
+		<div class="container" style="margin-top: 5rem;">
+			<div id="alerts">
+			</div>
+			{% block body %}{% endblock %}
+		</div>
+		<div style="height: 5rem;"></div>
+		<div id="footer-helper"></div>
+  </body>
+  <footer class="text-white text-center" style="background-color: rgb(38, 38, 38);">
+	  <div class="row" style="width: 100%;">
+	    <div class="col p-3">
+		    <section class="social-icon">
+		      <a class="btn btn-outline-light btn-floating m-1" href="https://www.facebook.com/smshahriar.zarir.94/" target="_blank" role="button"
+		        ><i class="fab fa-facebook-f"></i
+		      ></a>
+		      <a class="btn btn-outline-light btn-floating m-1" href="#" target="_blank" role="button"
+		        ><i class="fab fa-twitter"></i
+		      ></a>
+		      <a class="btn btn-outline-light btn-floating m-1" href="https://www.youtube.com/@programsmart" target="_blank" role="button"
+		        ><i class="fab fa-youtube"></i
+		      ></a>
+		      <a class="btn btn-outline-light btn-floating m-1" href="#" target="_blank" role="button"
+		        ><i class="fab fa-instagram"></i
+		      ></a>
+		      <a class="btn btn-outline-light btn-floating m-1" href="#" target="_blank" role="button"
+		        ><i class="fab fa-linkedin-in"></i
+		      ></a>
+		      <a class="btn btn-outline-light btn-floating m-1" href="https://github.com/dev-zarir/" target="_blank" role="button"
+		        ><i class="fab fa-github"></i
+		      ></a>
+		    </section>
+	    </div>
+	    <div class="col d-flex p-3 pe-0">
+			  <p class="copyright text-white">Made by <a class="text-muted" href="https://programsmart.xyz/">ZARIR</a> in Bangladesh</p>
+	    </div>
+	  </div>
+  	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  	<script type="text/javascript" src="/static/mdb.min.js"></script>
+  	<script type="text/javascript" src="/static/main.js"></script>
+  	{% block script %}{% endblock %}
+	</footer>
+</html>

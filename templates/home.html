@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Grammar Algorithms - Your Grammar Solver{% endblock %}
+{% block home %}active{% endblock %}
+{% block body %}
+<div align="center" id="intro" class="py-4 card" style="border-radius: 15px;">
+	<div class="card-body">
+		<h1 class="card-title">Welcome to Grammar Algorithms</h1>
+		<p class="card-text">Grammar Algorithms is a website that offers a variety of tools to improve grammar skills, including quizzes and exercises on tag questions, sentence transformations, and more. It's user-friendly, easy to navigate and offers step by step instructions to help users understand and master the material.</p>
+	</div>
+</div>
+<div align="center" class="mt-5">
+    <h3>Select any tools</h3>
+	<div style="max-width: 400px">
+		<button onclick="window.location.href='/solve-tag'" class="btn btn-primary ripple-surface btn-block">Tag Question Solver</button>
+	</div>
+</div>
+{% endblock %}
