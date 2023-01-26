@@ -10,7 +10,7 @@ function manage_footer() {
 manage_footer()
 window.addEventListener('resize', manage_footer, true);
 $('.btn-close').click(() => {setTimeout(manage_footer, 200)})
-
+function random(){return (Math.random() + 1).toString(36).substring(2);}
 function show_msg(type, msg) {
     if(type=='primary'){icon='fa-info-circle'}
     else if(type=='info'){icon='fa-chevron-circle-right'}
@@ -25,4 +25,32 @@ function show_msg(type, msg) {
 }
 function clear_msg(){
     $('#alerts').html('');
+}
+async function submit_tag() {
+    question=$('#question').val()
+    if(question==''){show_msg('warning', 'Please enter a sentence first.');return false}
+    await $.ajax({
+        url: '/api/solve-tag',
+        type:'POST',
+        data:'question='+encodeURIComponent(question),
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        success: async function(r,s){
+            if(! r['success']){
+                show_msg('danger', 'Something went wrong with the server. Please check your sentence or try again later')
+            } else{
+                add_answer(r['question'], r['answer'])
+            }
+        },
+        error: function(e,s){
+            show_msg('danger', 'Something went wrong with the server. Please try again later.')
+        },
+    })
+}
+function add_answer(question, answer){
+    class_name=random()
+    old_html=$('#answers').html();
+    new_html=`<div class="card ${class_name} my-3"><div class="card-body"><p class="card-text">${question}, <u>${answer}</u>?</p></div></div>`
+    $('#answers').html(new_html + old_html);
+    window.scrollTo(0,$(`.${class_name}`).offset().top - 100);
+    setTimeout(function(){$(`.${class_name}`).css('box-shadow','none')}, 300);
 }

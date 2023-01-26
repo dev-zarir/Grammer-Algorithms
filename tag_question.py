@@ -125,8 +125,8 @@ def get_subject_from_sent(sent:str) -> list:
 	elif 'who' == full_sub_text: return 'they'
 	elif 'this' == full_sub_text or 'that' == full_sub_text: return 'it'
 	elif 'these' == full_sub_text or 'those' == full_sub_text: return 'they'
-	elif subject.pos_ == 'ADJ' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
-	elif subject.pos_ == 'NOUN' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
+	# elif subject.pos_ == 'ADJ' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
+	# elif subject.pos_ == 'NOUN' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
 	elif subject.dep_ in ['nsubj'] and subject.pos_ == 'NOUN' and subject.tag_ == 'NN' and subject.text == 'none': return 'they'
 	elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'thing' in subject.text.lower(): return 'it'
 	elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'one' in subject.text.lower(): return 'they'
@@ -191,7 +191,7 @@ def solve_tag_question(sent:str) -> str:
         if verb == 'is': verb = 'are'
         if verb == 'has': verb = 'have'
     if not negative: verb=get_negative_verb(verb)
-    return f'{verb} {subject}?'
+    return f'{verb} {subject}'
 
 if __name__ == '__main__':
     while 1:
