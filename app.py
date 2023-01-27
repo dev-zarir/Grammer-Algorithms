@@ -30,7 +30,7 @@ def tag_debug(sent:str):
     text=""
     def print(*args):
         global text
-        text+=" ".join(args)+"\n"
+        text+=" ".join([str(arg) for arg in args])+"\n"
     # SUBTREE
     print('SUBTREE START')
     doc = nlp(sent)
