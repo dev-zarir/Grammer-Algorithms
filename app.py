@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from tag_question import solve_tag_question, nlp
+from urllib.parse import unquote_plus
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = 'ighirgiihigh4i3ig43itiheifuhewi'
@@ -24,11 +25,12 @@ def tag_solver_api():
 
 @app.route('/debug/<sent>', methods=['GET', 'POST'])
 def tag_debug(sent:str):
+    sent=unquote_plus(sent)
     global text
     text=""
     def print(*args):
         global text
-        text+=" ".join(*args)+"\n"
+        text+=" ".join(args)+"\n"
     # SUBTREE
     print('SUBTREE START')
     doc = nlp(sent)
