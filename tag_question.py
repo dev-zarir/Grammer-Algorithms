@@ -22,7 +22,7 @@ def get_last_sent(sent:str):
     return doc.text
 
 def get_simple_sent(sent:str):
-    sent=get_last_sent(sent).lower().replace('let us', 'we shall not').replace("let's", 'we shall not').replace("'ll",' will').replace("'m", ' am').replace("'s", ' is').replace("can't","can not").replace("n't", " not").replace("'re"," are").replace("'ve"," have").split(' ')
+    sent=get_last_sent(sent).lower().replace('let us', 'we shall not').replace("let's", 'we shall not').replace("'ll",' will').replace("'m", ' am').replace("'s", ' is').replace("can't","can not").replace("aren't","am not").replace("ain't","am not").replace("shan't","shall not").replace("won't","will not").replace("n't", " not").replace("'re"," are").replace("'ve"," have").split(' ')
     if sent[0] == 'let':
         if sent[1] != 'us':
             sent[0] = 'you'
