@@ -46,7 +46,7 @@ def tag_debug(sent:str):
     print(data)
     print("EXPLAIN END")
     
-    return text
+    return text.replace("\n","<br>")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
