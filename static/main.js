@@ -29,6 +29,7 @@ function clear_msg(){
 async function submit_tag() {
     question=$('#question').val()
     if(question==''){show_msg('warning', 'Please enter a sentence first.');return false}
+    $("#tag-submit").attr("disabled", "true")
     await $.ajax({
         url: '/api/solve-tag',
         type:'POST',
@@ -40,11 +41,13 @@ async function submit_tag() {
             } else{
                 add_answer(r['question'], r['answer'])
             }
+            $("#tag-submit").removeAttr("disabled")
         },
         error: function(e,s){
             show_msg('danger', 'Something went wrong with the server. Please try again later.')
+            $("#tag-submit").removeAttr("disabled")
         },
-    })
+    });$("#tag-submit").removeAttr("disabled")
 }
 function add_answer(question, answer){
     class_name=random()
