@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-from tag_question import solve_tag_question
+from tag_question import solve_tag_question, nlp
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = 'ighirgiihigh4i3ig43itiheifuhewi'
