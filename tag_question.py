@@ -33,6 +33,8 @@ def get_simple_sent(sent:str):
     for token in doc:
         if i==0 and token.tag_ == 'VB':
             sent = 'you will not ' + sent
+        if i==0 and token.pos_ == "ADJ":
+            sent = "i wish you " + sent
         i+=1
     if "'d" in sent:
         doc=nlp(sent.capitalize())
