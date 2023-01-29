@@ -52,6 +52,8 @@ def get_exact_sent(sent:str):
             sub_or_cls = ' '.join([t.text for t in list(token.subtree)])
             if len(sub_or_cls.split(' '))<2:
                 continue
+            if not check_if_complex(sub_or_cls):
+                return sub_or_cls
             # print('Removed:', sub_or_cls)
             return doc.text.replace(sub_or_cls, '').replace('  ', ' ')
     return doc.text
@@ -68,6 +70,17 @@ def get_negative_verb(verb:str) -> list:
         return exceptional_neg_verbs.get(verb)
     else:
         return verb + "n't"
+
+def check_if_complex(clause:str) -> bool:
+    doc = nlp(clause)
+    full_sub_text=''
+    for token in doc:
+        if token.dep_ in ['nsubj', 'nsubjpass']:
+            full_sub_text = ' '.join([t.text for t in list(token.subtree)])
+    if clause.split(' ').index(full_sub_text.split(' ')[0]) == 0:
+        return False
+    else:
+        return True
 
 def get_if_negative_sent(sent:str) -> bool:
     doc = nlp(sent)
@@ -108,57 +121,57 @@ def get_aux_verb_from_sent(sent:str) -> list:
     return aux_verbs
 
 def get_subject_from_sent(sent:str) -> list:
-	doc = nlp(sent)
-	verb=list(doc.sents)[0].root
-	full_sub_text=''
-	subject=Fake_Token()
-	found_sub=False
-	aux_verb=Fake_Token()
-	preposition='yugieirugykbvkiy'
-	found_aux=False
-	for token in doc:
-		if token.dep_ in ['nsubj', 'nsubjpass']:
-			full_sub_text = ' '.join([t.text for t in list(token.subtree)])
-		if token.dep_ in ['nsubj', 'nsubjpass', 'expl']:
-			if not found_sub: subject = token; found_sub = True
-		if token.dep_ in ['aux']:
-			if not found_aux: aux_verb = token; found_aux = True
-		if token.dep_ == 'prep': preposition = token.text
-	# print(subject)
-	if 'of us' in full_sub_text: return 'we'
-	elif 'of them' in full_sub_text: return 'they'
-	elif 'who' == full_sub_text: return 'they'
-	elif 'this' == full_sub_text or 'that' == full_sub_text: return 'it'
-	elif 'these' == full_sub_text or 'those' == full_sub_text: return 'they'
-	# elif subject.pos_ == 'ADJ' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
-	# elif subject.pos_ == 'NOUN' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
-	elif subject.dep_ in ['nsubj'] and subject.pos_ == 'NOUN' and subject.tag_ == 'NN' and subject.text == 'none': return 'they'
-	elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'thing' in subject.text.lower(): return 'it'
-	elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'one' in subject.text.lower(): return 'they'
-	elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'body' in subject.text.lower(): return 'they'
-	elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON': return subject.text.lower() if subject.text != 'i' else 'I'
-	elif verb.morph.get('Person') == ['1'] and verb.morph.get('Number') == ['Sing']: return 'I'
-	elif verb.morph.get('Person') == ['1'] and verb.morph.get('Number') == ['Plur']: return 'we'
-	elif verb.morph.get('Person') == ['2'] and verb.morph.get('Number') == ['Sing']: return 'you'
-	elif verb.morph.get('Person') == ['2'] and verb.morph.get('Number') == ['Plur']: return 'you'
-	elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Sing']: return 'he/she/it'
-	elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Plur']: return 'they'
-	elif subject.morph.get('Person') == ['1'] and subject.morph.get('Number') == ['Sing']: return 'I'
-	elif subject.morph.get('Person') == ['1'] and subject.morph.get('Number') == ['Plur']: return 'we'
-	elif subject.morph.get('Person') == ['2'] and subject.morph.get('Number') == ['Sing']: return 'you'
-	elif subject.morph.get('Person') == ['2'] and subject.morph.get('Number') == ['Plur']: return 'you'
-	elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Sing']: return 'he/she/it'
-	elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Plur']: return 'they'
-	elif aux_verb.morph.get('Person') == ['1'] and aux_verb.morph.get('Number') == ['Sing']: return 'I'
-	elif aux_verb.morph.get('Person') == ['1'] and aux_verb.morph.get('Number') == ['Plur']: return 'we'
-	elif aux_verb.morph.get('Person') == ['2'] and aux_verb.morph.get('Number') == ['Sing']: return 'you'
-	elif aux_verb.morph.get('Person') == ['2'] and aux_verb.morph.get('Number') == ['Plur']: return 'you'
-	elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Sing']: return 'he/she/it'
-	elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Plur']: return 'they'
-	else:
-		if subject.morph.get('Number') == ['Plur']: return 'they'
-		elif subject.dep_ in ['nsubj'] and subject.pos_ == 'PROPN' and subject.tag_ == 'NNP': return 'he/she/it'
-		else: return 'it'
+    doc = nlp(sent)
+    verb=list(doc.sents)[0].root
+    full_sub_text=''
+    subject=Fake_Token()
+    found_sub=False
+    aux_verb=Fake_Token()
+    preposition='yugieirugykbvkiy'
+    found_aux=False
+    for token in doc:
+        if token.dep_ in ['nsubj', 'nsubjpass']:
+            full_sub_text = ' '.join([t.text for t in list(token.subtree)])
+        if token.dep_ in ['nsubj', 'nsubjpass', 'expl']:
+            if not found_sub: subject = token; found_sub = True
+        if token.dep_ in ['aux']:
+            if not found_aux: aux_verb = token; found_aux = True
+        if token.dep_ == 'prep': preposition = token.text
+    # print(subject)
+    if 'of us' in full_sub_text: return 'we'
+    elif 'of them' in full_sub_text: return 'they'
+    elif 'who' == full_sub_text: return 'they'
+    elif 'this' == full_sub_text or 'that' == full_sub_text: return 'it'
+    elif 'these' == full_sub_text or 'those' == full_sub_text: return 'they'
+    # elif subject.pos_ == 'ADJ' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
+    # elif subject.pos_ == 'NOUN' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
+    elif subject.dep_ in ['nsubj'] and subject.pos_ == 'NOUN' and subject.tag_ == 'NN' and subject.text == 'none': return 'they'
+    elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'thing' in subject.text.lower(): return 'it'
+    elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'one' in subject.text.lower(): return 'they'
+    elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'body' in subject.text.lower(): return 'they'
+    elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON': return subject.text.lower() if subject.text != 'i' else 'I'
+    elif verb.morph.get('Person') == ['1'] and verb.morph.get('Number') == ['Sing']: return 'I'
+    elif verb.morph.get('Person') == ['1'] and verb.morph.get('Number') == ['Plur']: return 'we'
+    elif verb.morph.get('Person') == ['2'] and verb.morph.get('Number') == ['Sing']: return 'you'
+    elif verb.morph.get('Person') == ['2'] and verb.morph.get('Number') == ['Plur']: return 'you'
+    elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Sing']: return 'he/she/it'
+    elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Plur']: return 'they'
+    elif subject.morph.get('Person') == ['1'] and subject.morph.get('Number') == ['Sing']: return 'I'
+    elif subject.morph.get('Person') == ['1'] and subject.morph.get('Number') == ['Plur']: return 'we'
+    elif subject.morph.get('Person') == ['2'] and subject.morph.get('Number') == ['Sing']: return 'you'
+    elif subject.morph.get('Person') == ['2'] and subject.morph.get('Number') == ['Plur']: return 'you'
+    elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Sing']: return 'he/she/it'
+    elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Plur']: return 'they'
+    elif aux_verb.morph.get('Person') == ['1'] and aux_verb.morph.get('Number') == ['Sing']: return 'I'
+    elif aux_verb.morph.get('Person') == ['1'] and aux_verb.morph.get('Number') == ['Plur']: return 'we'
+    elif aux_verb.morph.get('Person') == ['2'] and aux_verb.morph.get('Number') == ['Sing']: return 'you'
+    elif aux_verb.morph.get('Person') == ['2'] and aux_verb.morph.get('Number') == ['Plur']: return 'you'
+    elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Sing']: return 'he/she/it'
+    elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Plur']: return 'they'
+    else:
+        if subject.morph.get('Number') == ['Plur']: return 'they'
+        elif subject.dep_ in ['nsubj'] and subject.pos_ == 'PROPN' and subject.tag_ == 'NNP': return 'he/she/it'
+        else: return 'it'
 
 def get_pronoun_from_subject(subject:str) -> str:
     doc = nlp(subject.lower())
