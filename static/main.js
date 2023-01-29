@@ -39,7 +39,8 @@ async function submit_tag() {
             if(! r['success']){
                 show_msg('danger', 'Something went wrong with the server. Please check your sentence or try again later')
             } else{
-                add_answer(r['question'], r['answer'])
+                add_answer(r['question'], r['answer']);
+                $("#question").val('').removeClass('active');
             }
             $("#tag-submit").removeAttr("disabled")
         },
