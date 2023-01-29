@@ -48,7 +48,7 @@ def get_simple_sent(sent:str):
 def get_exact_sent(sent:str):
     doc = nlp(get_simple_sent(sent))
     for token in doc:
-        if token.dep_ in ['relcl', 'ccomp', 'acomp', 'advcl', 'csubjpass']:
+        if token:
             sub_or_cls = ' '.join([t.text for t in list(token.subtree)])
             if len(sub_or_cls.split(' '))<2:
                 continue
