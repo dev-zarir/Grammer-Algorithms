@@ -1,6 +1,16 @@
 import spacy
+from json import load
 
 nlp = spacy.load("en_core_web_sm")
+gender_file=open("all_gender_noun.json", "r")
+gender_list=load(gender_file)
+
+def get_gender(noun:str):
+    for gender, gender_words in gender_list.items():
+        if noun in gender_words:
+            return gender 
+    return "neuter"
+    
 operators= ['am', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'can', 'could', 'shall', 'should', 'will', 'would', 'may', 'might', 'must', 'dare', 'need', 'used', 'ought']
 exceptional_neg_verbs = {'am': "aren't", 'can': "can't", 'shall': "shan't", 'will': "won't",'need':'need'}
 negative_words= ['nothing', 'nobody', 'none', 'never', 'hardly', 'scarcely', 'seldom', 'rarely', 'barely', 'few', 'little']

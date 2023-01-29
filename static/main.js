@@ -37,7 +37,7 @@ async function submit_tag() {
         headers:{'Content-Type':'application/x-www-form-urlencoded'},
         success: async function(r,s){
             if(! r['success']){
-                show_msg('danger', 'Something went wrong with the server. Please check your sentence or try again later')
+                show_msg('danger', 'Something went wrong with the server. Please check your sentence or try again later. Error: '+ r["error"])
             } else{
                 add_answer(r['question'], r['answer']);
                 $("#question").val('').removeClass('active');

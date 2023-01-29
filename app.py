@@ -19,8 +19,8 @@ def tag_solver_api():
     # print(question)
     try:
         answer=solve_tag_question(question)
-    except:
-        return jsonify({'success':False, 'question':question})
+    except Exception as err:
+        return jsonify({'success':False, 'question':question, "error": str(err)})
     return jsonify({'success':True, 'question':question, 'answer': answer})
 
 @app.route('/debug/<sent>', methods=['GET', 'POST'])
@@ -42,7 +42,7 @@ def tag_debug(sent:str):
     doc = nlp(sent)
     data=[]
     for token in doc:
-        data.append((token.text, token.dep_, token.pos_, token.tag_))
+        data.append((token.text, token.dep_, token.pos_, token.tag_, token.lemma_))
     print(data)
     print("EXPLAIN END")
     
