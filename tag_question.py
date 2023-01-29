@@ -75,6 +75,9 @@ def get_if_negative_sent(sent:str) -> bool:
         if token.dep_ == 'neg':
             return True
         elif token.lemma_ in negative_words:
+            token_index=sent.split(' ').index(token.text)
+            if sent.split(' ')[token_index - 1] in ['a','the'] and token.lemma_ in ['few', 'little']:
+                return False
             return True
     if 'who' in sent: return True
     return False
