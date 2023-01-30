@@ -223,7 +223,7 @@ def solve_tag_question(sent:str) -> str:
 
 if __name__ == '__main__':
     while 1:
-        str_in = input('\nSentence: ')
+        str_in = "He is ill and they are laughing"
         if str_in == 'exit': quit()
         elif 'python -u' in str_in:continue
         print('Answer:', solve_tag_question(str_in))
