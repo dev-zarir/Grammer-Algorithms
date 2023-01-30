@@ -5,19 +5,28 @@ nlp = spacy.load("en_core_web_sm")
 gender_file=open("all_gender_noun.json", "r")
 gender_list=load(gender_file)
 
-def get_gender(noun:str):
-    for gender, gender_words in gender_list.items():
-        if noun in gender_words:
-            return gender 
-    return "neuter"
-    
+subor_conj=['after', 'although', 'as', 'as if', 'as long as', 'because', 'before', 'despite', 'even if', 'even though', 'if', 'in order that', 'rather than', 'since', 'so that', 'that', 'though', 'unless', 'until', 'when', 'where', 'whereas', 'whether', 'while']
 operators= ['am', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'can', 'could', 'shall', 'should', 'will', 'would', 'may', 'might', 'must', 'dare', 'need', 'used', 'ought']
 exceptional_neg_verbs = {'am': "aren't", 'can': "can't", 'shall': "shan't", 'will': "won't",'need':'need'}
 negative_words= ['nothing', 'nobody', 'none', 'never', 'hardly', 'scarcely', 'seldom', 'rarely', 'barely', 'few', 'little']
 imp_replacement=['me','him','her','them', 'it']
 # Pronouns: I, you, he, she, it, we, they, there
 
-class Fake_Token: morph = {}; dep_ = ''; pos_ = ''; tag_ = ''
+def get_gender(noun:str):
+    for gender, gender_words in gender_list.items():
+        if noun in gender_words:
+            return gender 
+    return "neuter"
+
+def get_gendered_pronoun_from_subject(subject:str):
+    print('given sub:',subject)
+    if not subject: return 'it'
+    gender=get_gender(subject)
+    if gender=='masculine' or gender=='common': return 'he'
+    elif gender=='feminine': return 'she'
+    else: return 'it'
+
+class Fake_Token: morph = {}; dep_ = ''; pos_ = ''; tag_ = ''; text=''; lemma_=''
 
 def print_subtrees(sent:str):
     print('SUBTREE START')
@@ -58,11 +67,14 @@ def get_simple_sent(sent:str):
 def get_exact_sent(sent:str):
     doc = nlp(get_simple_sent(sent))
     for token in doc:
-        if token:
+        if token.dep_ != 'ROOT':
             sub_or_cls = ' '.join([t.text for t in list(token.subtree)])
+            if not check_if_has_verb(sub_or_cls):
+                continue
             if len(sub_or_cls.split(' '))<2:
                 continue
             if not check_if_complex(sub_or_cls):
+                print(f'Retuned text: "{sub_or_cls}"')
                 return sub_or_cls
             # print('Removed:', sub_or_cls)
             return doc.text.replace(sub_or_cls, '').replace('  ', ' ')
@@ -81,16 +93,27 @@ def get_negative_verb(verb:str) -> list:
     else:
         return verb + "n't"
 
+def check_if_has_verb(sent:str) -> bool:
+    doc = nlp(sent)
+    for token in doc:
+        if token.tag_ in ['VERB', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
+            return True
+    return False
+
 def check_if_complex(clause:str) -> bool:
     doc = nlp(clause)
     full_sub_text=''
     for token in doc:
         if token.dep_ in ['nsubj', 'nsubjpass']:
             full_sub_text = ' '.join([t.text for t in list(token.subtree)])
-    if clause.split(' ').index(full_sub_text.split(' ')[0]) == 0:
-        return False
-    else:
+    print(f'clause: "{clause}"')
+    print(f'full sub: "{full_sub_text}"')
+    first_sub_word=full_sub_text.split(' ')[0]
+    if clause.split(' ')[0] in subor_conj:
         return True
+    if clause.split(' ')[0] != first_sub_word:
+        return True
+    return False
 
 def get_if_negative_sent(sent:str) -> bool:
     doc = nlp(sent)
@@ -153,8 +176,6 @@ def get_subject_from_sent(sent:str) -> list:
     elif 'who' == full_sub_text: return 'they'
     elif 'this' == full_sub_text or 'that' == full_sub_text: return 'it'
     elif 'these' == full_sub_text or 'those' == full_sub_text: return 'they'
-    # elif subject.pos_ == 'ADJ' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
-    # elif subject.pos_ == 'NOUN' and sent.split(' ')[0] in ['the', 'a', 'an']: return 'they'
     elif subject.dep_ in ['nsubj'] and subject.pos_ == 'NOUN' and subject.tag_ == 'NN' and subject.text == 'none': return 'they'
     elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'thing' in subject.text.lower(): return 'it'
     elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'one' in subject.text.lower(): return 'they'
@@ -164,23 +185,23 @@ def get_subject_from_sent(sent:str) -> list:
     elif verb.morph.get('Person') == ['1'] and verb.morph.get('Number') == ['Plur']: return 'we'
     elif verb.morph.get('Person') == ['2'] and verb.morph.get('Number') == ['Sing']: return 'you'
     elif verb.morph.get('Person') == ['2'] and verb.morph.get('Number') == ['Plur']: return 'you'
-    elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Sing']: return 'he/she/it'
+    elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Sing']: return get_gendered_pronoun_from_subject(subject.lemma_)
     elif verb.morph.get('Person') == ['3'] and verb.morph.get('Number') == ['Plur']: return 'they'
     elif subject.morph.get('Person') == ['1'] and subject.morph.get('Number') == ['Sing']: return 'I'
     elif subject.morph.get('Person') == ['1'] and subject.morph.get('Number') == ['Plur']: return 'we'
     elif subject.morph.get('Person') == ['2'] and subject.morph.get('Number') == ['Sing']: return 'you'
     elif subject.morph.get('Person') == ['2'] and subject.morph.get('Number') == ['Plur']: return 'you'
-    elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Sing']: return 'he/she/it'
+    elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Sing']: return get_gendered_pronoun_from_subject(subject.lemma_)
     elif subject.morph.get('Person') == ['3'] and subject.morph.get('Number') == ['Plur']: return 'they'
     elif aux_verb.morph.get('Person') == ['1'] and aux_verb.morph.get('Number') == ['Sing']: return 'I'
     elif aux_verb.morph.get('Person') == ['1'] and aux_verb.morph.get('Number') == ['Plur']: return 'we'
     elif aux_verb.morph.get('Person') == ['2'] and aux_verb.morph.get('Number') == ['Sing']: return 'you'
     elif aux_verb.morph.get('Person') == ['2'] and aux_verb.morph.get('Number') == ['Plur']: return 'you'
-    elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Sing']: return 'he/she/it'
+    elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Sing']: return get_gendered_pronoun_from_subject(subject.lemma_)
     elif aux_verb.morph.get('Person') == ['3'] and aux_verb.morph.get('Number') == ['Plur']: return 'they'
     else:
         if subject.morph.get('Number') == ['Plur']: return 'they'
-        elif subject.dep_ in ['nsubj'] and subject.pos_ == 'PROPN' and subject.tag_ == 'NNP': return 'he/she/it'
+        elif subject.dep_ in ['nsubj'] and subject.pos_ == 'PROPN' and subject.tag_ == 'NNP': return get_gendered_pronoun_from_subject(subject.lemma_)
         else: return 'it'
 
 def get_pronoun_from_subject(subject:str) -> str:
@@ -194,6 +215,7 @@ def solve_tag_question(sent:str) -> str:
     # print_subtrees(sent)
     # print(get_explain(sent))
     sentence = get_exact_sent(sent)
+    print('given text:',sentence)
     subject=get_subject_from_sent(sentence)
     # print(sentence)
 
@@ -204,7 +226,7 @@ def solve_tag_question(sent:str) -> str:
     aux_verbs=get_aux_verb_from_sent(sentence)
     main_verbs=get_verb_from_sent(sentence)
     negative=get_if_negative_sent(sentence)
-    # print('Subject:', subject)
+    print('Subject:', subject)
     # print('Auxilary Verbs:', aux_verbs)
     # print('Main Verbs:', main_verbs)
     # print('Negative:', negative)
@@ -222,8 +244,7 @@ def solve_tag_question(sent:str) -> str:
     return f'{verb} {subject}'
 
 if __name__ == '__main__':
-    while 1:
-        str_in = "He is ill and they are laughing"
-        if str_in == 'exit': quit()
-        elif 'python -u' in str_in:continue
-        print('Answer:', solve_tag_question(str_in))
+    str_in = "He visited the place and he was surprised"
+    if str_in == 'exit': quit()
+    # elif 'python -u' in str_in:continue
+    print('Answer:', solve_tag_question(str_in))
