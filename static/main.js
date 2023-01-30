@@ -55,6 +55,6 @@ function add_answer(question, answer){
     old_html=$('#answers').html();
     new_html=`<div class="card ${class_name} my-3"><div class="card-body"><p class="card-text">${question}, <u>${answer}</u>?</p></div></div>`
     $('#answers').html(new_html + old_html);
-    window.scrollTo(0,$(`.${class_name}`).offset().top - 100);
+    window.scrollTo(0,$(`.${class_name}`).offset().top - 200);
     setTimeout(function(){$(`.${class_name}`).css('box-shadow','0 8px 17px 0 rgba(0,0,0,.2),0 6px 20px 0 rgba(0,0,0,.19)')}, 300);
 }

@@ -2,15 +2,19 @@ import spacy
 from json import load
 
 nlp = spacy.load("en_core_web_sm")
+animals_file=open('animals.json','r')
+animals_list=load(animals_file)
 gender_file=open("all_gender_noun.json", "r")
 gender_list=load(gender_file)
 
-subor_conj=['after', 'although', 'as', 'as if', 'as long as', 'because', 'before', 'despite', 'even if', 'even though', 'if', 'in order that', 'rather than', 'since', 'so that', 'that', 'though', 'unless', 'until', 'when', 'where', 'whereas', 'whether', 'while']
+subor_conj=['after', 'although', 'as', 'as if', 'as long as', 'because', 'before', 'despite', 'even', 'even if', 'even though', 'if', 'in order that', 'rather', 'rather than', 'since', 'so', 'so that', 'that', 'though', 'unless', 'until', 'whereas', 'whether', 'while', 'what', 'when', 'where', 'who', 'whom', 'which', 'whose', 'why' ,'how']
 operators= ['am', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'can', 'could', 'shall', 'should', 'will', 'would', 'may', 'might', 'must', 'dare', 'need', 'used', 'ought']
 exceptional_neg_verbs = {'am': "aren't", 'can': "can't", 'shall': "shan't", 'will': "won't",'need':'need'}
 negative_words= ['nothing', 'nobody', 'none', 'never', 'hardly', 'scarcely', 'seldom', 'rarely', 'barely', 'few', 'little']
 imp_replacement=['me','him','her','them', 'it']
 # Pronouns: I, you, he, she, it, we, they, there
+
+class Fake_Token: morph = {}; dep_ = ''; pos_ = ''; tag_ = ''; text=''; lemma_=''
 
 def get_gender(noun:str):
     for gender, gender_words in gender_list.items():
@@ -20,13 +24,25 @@ def get_gender(noun:str):
 
 def get_gendered_pronoun_from_subject(subject:str):
     print('given sub:',subject)
-    if not subject: return 'it'
+    if not subject: return 'it (he/she/it)'
     gender=get_gender(subject)
     if gender=='masculine' or gender=='common': return 'he'
     elif gender=='feminine': return 'she'
-    else: return 'it'
+    else: return 'it (he/she/it)'
 
-class Fake_Token: morph = {}; dep_ = ''; pos_ = ''; tag_ = ''; text=''; lemma_=''
+def match_pos(structure:str, sent:str):
+    doc = nlp(sent)
+    sentence_structure=[]
+    for token in doc:
+        sentence_structure.append(token.pos_)
+    return structure in '+'.join(sentence_structure)
+
+def has_nsubj(sent:str):
+    doc = nlp(sent)
+    for token in doc:
+        if token.dep_ in ['nsubj', 'nsubjpass']:
+            if token.lemma_ not in subor_conj: return True
+    return False
 
 def print_subtrees(sent:str):
     print('SUBTREE START')
@@ -54,6 +70,8 @@ def get_simple_sent(sent:str):
             sent = 'you will not ' + sent
         if i==0 and token.pos_ == "ADJ":
             sent = "i wish you " + sent
+        if i==0 and token.pos_ == "ADJ" and token.dep_ == 'ROOT':
+            sent = "i am " + sent
         i+=1
     if "'d" in sent:
         doc=nlp(sent.capitalize())
@@ -66,9 +84,13 @@ def get_simple_sent(sent:str):
 
 def get_exact_sent(sent:str):
     doc = nlp(get_simple_sent(sent))
+    root_verb=''
     for token in doc:
-        if token.dep_ != 'ROOT':
+        if token.dep_ =='ROOT': root_verb=token.text
+        if token.dep_ != 'ROOT' and token.dep_ != 'nsubj':
             sub_or_cls = ' '.join([t.text for t in list(token.subtree)])
+            if sub_or_cls.split(' ')[0] in ['not'] and root_verb in ['need']:
+                continue
             if not check_if_has_verb(sub_or_cls):
                 continue
             if len(sub_or_cls.split(' '))<2:
@@ -109,6 +131,8 @@ def check_if_complex(clause:str) -> bool:
     print(f'clause: "{clause}"')
     print(f'full sub: "{full_sub_text}"')
     first_sub_word=full_sub_text.split(' ')[0]
+    if match_pos('ADV',clause.split(' ')[0]):
+        return False
     if clause.split(' ')[0] in subor_conj:
         return True
     if clause.split(' ')[0] != first_sub_word:
@@ -145,11 +169,15 @@ def get_aux_verb_from_sent(sent:str) -> list:
     doc = nlp(sent)
     aux_verbs=[]
     i=0
+    is_how_adj=False
     for token in doc:
         if token.pos_ == 'AUX' and token.text not in ['be']: aux_verbs.append(token.text)
         if token.dep_ == 'ROOT' and token.text.lower() in ['need'] and len(aux_verbs) == 0: aux_verbs.append(token.text)
-        if sent.split(' ')[0].lower() == 'how' and i==1 and token.pos_ == 'ADJ': aux_verbs.append('is')
+        if sent.split(' ')[0].lower() == 'how' and i==1 and token.pos_ == 'ADJ': is_how_adj=True
         i+=1
+    if is_how_adj: aux_verbs.append('is')
+    print(aux_verbs)
+    # They need not complete the work
     if 'need not' not in sent and 'need' in aux_verbs: aux_verbs.remove('need')
     return aux_verbs
 
@@ -177,6 +205,7 @@ def get_subject_from_sent(sent:str) -> list:
     elif 'this' == full_sub_text or 'that' == full_sub_text: return 'it'
     elif 'these' == full_sub_text or 'those' == full_sub_text: return 'they'
     elif subject.dep_ in ['nsubj'] and subject.pos_ == 'NOUN' and subject.tag_ == 'NN' and subject.text == 'none': return 'they'
+    elif subject.lemma_ in animals_list and subject.morph.get('Number') == ['Sing']: return 'it'
     elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'thing' in subject.text.lower(): return 'it'
     elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'one' in subject.text.lower(): return 'they'
     elif subject.dep_ in ['expl', 'nsubj'] and subject.pos_ == 'PRON' and subject.tag_ == 'NN' and 'body' in subject.text.lower(): return 'they'
@@ -216,7 +245,9 @@ def solve_tag_question(sent:str) -> str:
     # print(get_explain(sent))
     sentence = get_exact_sent(sent)
     print('given text:',sentence)
-    subject=get_subject_from_sent(sentence)
+    if not has_nsubj(sentence): sub_sent=get_simple_sent(sent)
+    else: sub_sent=sentence
+    subject=get_subject_from_sent(sub_sent)
     # print(sentence)
 
     # loc={}
@@ -227,9 +258,9 @@ def solve_tag_question(sent:str) -> str:
     main_verbs=get_verb_from_sent(sentence)
     negative=get_if_negative_sent(sentence)
     print('Subject:', subject)
-    # print('Auxilary Verbs:', aux_verbs)
-    # print('Main Verbs:', main_verbs)
-    # print('Negative:', negative)
+    print('Auxilary Verbs:', aux_verbs)
+    print('Main Verbs:', main_verbs)
+    print('Negative:', negative)
     if aux_verbs: verb=aux_verbs[0]
     else:
         try:
