@@ -7,6 +7,21 @@ function manage_footer() {
         $('#footer-helper').height('0px');
     }
 }
+async function add_views(){
+    path=window.location.pathname
+    await $.ajax({
+        url: `https://api.countapi.xyz/hit${path}/visits`,
+        success: async function(r,s){
+            let view_html = `<i class="far fa-eye"></i> ${r['value']}`
+            $('#views-section').html(view_html)
+        },
+        error: function(e,s){
+            let view_html = `<i class="far fa-eye"></i> 99999`
+            $('#views-section').html(view_html)
+        },
+    })
+}
+add_views()
 manage_footer()
 window.addEventListener('resize', manage_footer, true);
 $('.btn-close').click(() => {setTimeout(manage_footer, 200)})
